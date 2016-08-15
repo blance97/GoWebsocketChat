@@ -1,0 +1,27 @@
+.wrap {
+  position:relative;
+  margin:0 auto;
+  width:960px;
+}
+#header {
+  float:left;
+  width:100%;
+  background-color:#FFCC33;
+}
+#nav {
+  float:left;
+  background-color:#FFCC33;
+  border-top:2px solid #000000;
+}
+#nav ul {
+  list-style:none;
+  display:inline;
+  margin:0px;
+  padding:0px;
+}
+#nav li {
+  display:inline;
+  line-height:1.8em;
+}
+
+#nav .wrap {text-align:center; }
