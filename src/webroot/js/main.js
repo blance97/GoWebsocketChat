@@ -5,23 +5,29 @@ $(document).ready(function() {
     $('#CurrentRoom').html("CurrentRoom: " + localStorage.getItem("RoomName"))
     $('.modal-trigger').leanModal();
     $('#loggedinAs').html("Current User: " + getUser())
+    console.log("User: " + getUser())
+    $("#inputChat").keyup(function(event) {
+        if (event.keyCode == 13) {
+            $("#sendMsgBtn").click();
+        }
+    });
+
     $('#inputChat').val("");
     $('#sendMsgBtn').click(function(event) {
         var d = new Date();
         var n = d.toLocaleTimeString();
+
         data = JSON.stringify({
-                author: getUser(),
-                time: n,
-                body: $('#inputChat').val()
-            }),
-            ws.send(data);
+            author: getUser(),
+            time: n,
+            body: $('#inputChat').val()
+        }), ws.send(data);
         console.log($('#inputChat').val())
         $('#inputChat').val("");
         scrollBottom()
     });
 
 });
-
 
 function scrollBottom() {
     var height = 0;
@@ -36,8 +42,6 @@ function scrollBottom() {
 }
 
 ws = new WebSocket("ws://localhost:80/entry/" + localStorage.getItem("RoomName"));
-
-
 ws.onopen = function() {
     $("#ChatPanel").html("CONNECTED")
 };
@@ -50,7 +54,7 @@ var array = []
     This function is screwy because onload it loads previous messages so i have ot push to array TODO Fix
     */
 ws.onmessage = function(event) {
-  //  console.log("Recieved Message: " + event.data)
+    //  console.log("Recieved Message: " + event.data)
     array.push(event.data)
     printJSON(event.data)
 
@@ -64,11 +68,11 @@ function printJSON(data) {
 }
 
 function getUser() {
-    var Username = null;
-    $.ajax({
+    var Username
+    var request = $.ajax({
         type: 'GET',
         url: '/getUser',
-        async: true,
+        async: false,
         success: function(data) {
             var obj = jQuery.parseJSON(data)
             Username = obj.Username
@@ -76,26 +80,29 @@ function getUser() {
     });
     return Username
 }
+
 function changews(RoomName) {
     console.log("change room")
     localStorage.setItem("RoomName", RoomName);
     console.log(RoomName)
     window.location.reload()
 }
-function getRooms(){
+
+function getRooms() {
     $("#RoomChanger").html("")
-  $.ajax({
-      type: 'GET',
-      url: '/getRooms',
-      async: true,
-      success: function(data) {
-           var obj = jQuery.parseJSON(data)
-           for(i = 0; i < obj.Rooms.length; i++){
-             	    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" >' +  obj.Rooms[i] + '</a>');
-           }
-      }
-  });
+    $.ajax({
+        type: 'GET',
+        url: '/getRooms',
+        async: true,
+        success: function(data) {
+            var obj = jQuery.parseJSON(data)
+            for (i = 0; i < obj.Rooms.length; i++) {
+                $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" >' + obj.Rooms[i] + '</a>');
+            }
+        }
+    });
 }
+
 function CreateRoom() {
     $.ajax({
         type: 'POST',
@@ -113,12 +120,14 @@ function CreateRoom() {
 }
 
 function logout() {
-  $.ajax({
-    type: "GET",
-    url: "http://localhost/logout",
-    //data: {AppName: "Proline", Properties:null, Object: ""}, // An object, not a string.
-    contentType: "application/json; charset=utf-8",
-    dataType: "json",
-    success: function(data){window.location = "home.html"}
-  })
+    $.ajax({
+        type: "GET",
+        url: "http://localhost/logout",
+        //data: {AppName: "Proline", Properties:null, Object: ""}, // An object, not a string.
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(data) {
+            window.location = "home.html"
+        }
+    })
 }

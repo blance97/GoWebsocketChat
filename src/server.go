@@ -54,7 +54,7 @@ func NewServer(Roomname string) Server {
 
 func (s Server) updateLog(text string) {
 	file := strings.Split(s.Roomname, "/")
-	f, err := os.OpenFile("log/"+file[2], os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("log/"+file[2], os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}

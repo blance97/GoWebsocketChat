@@ -14,6 +14,7 @@ func main() {
 	go server.Listen("room1")
 	http.Handle("/", http.FileServer(http.Dir("webroot")))
 	 http.HandleFunc("/createRoom", RoomHandler)
+	 	 http.HandleFunc("/getRooms", getRooms)
 	 http.HandleFunc("/login", SetSessionID)
 	 http.HandleFunc("/logout", logout)
 	 http.HandleFunc("/signup", signUp)

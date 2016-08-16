@@ -72,8 +72,8 @@ func SetSessionID(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-			http.Error(w, "Invalid Username or Passwords", 400)
-			return
+		http.Error(w, "Invalid Username or Passwords", 400)
+		return
 	}
 }
 
@@ -96,7 +96,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	}
 	storeNewSessionToken(cookie.Value, username)
 	http.SetCookie(w, cookie)
-		w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 	return
 }
 
@@ -135,7 +135,9 @@ func getJSON(r *http.Request) map[string]interface{} {
 func RoomHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		data := getJSON(r)
+		mu.Lock()
 		server := NewServer("/entry/" + data["RoomName"].(string)) // start server
+		mu.Unlock()
 		go server.Listen(data["RoomName"].(string))
 	}
 }
@@ -164,6 +166,7 @@ Returns User so that it can validate whether or not a message belongs to them.
 func getUser(w http.ResponseWriter, r *http.Request) {
 	cookie, _ := r.Cookie("SessionToken")
 	SessionToken := cookie.Value
+
 	username, _ := getUsername(SessionToken)
 	q := User{
 		Username: username,
