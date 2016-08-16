@@ -3,6 +3,9 @@ $(document).ready(function() {
     for (i = 0; i < array.length; i++) {
         printJSON(array[i])
     }
+    if(localStorage.getItem("RoomName") == null){
+          localStorage.setItem("RoomName", "room1");
+    }
     $('#CurrentRoom').html("CurrentRoom: " + localStorage.getItem("RoomName"))
     $('.modal-trigger').leanModal();
     $('#loggedinAs').html("Current User: " + getUser())
@@ -42,7 +45,7 @@ function scrollBottom() {
     });
 }
 
-ws = new WebSocket("ws://localhost:80/entry/" + localStorage.getItem("RoomName"));
+var ws = new WebSocket("ws://" + window.location.host + "/entry/"+ localStorage.getItem("RoomName"));
 ws.onopen = function() {
     $("#ChatPanel").html("CONNECTED")
 };

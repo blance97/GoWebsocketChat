@@ -101,7 +101,10 @@ func logout(w http.ResponseWriter, r *http.Request) {
 checks the SessionID
 */
 func checkSession(w http.ResponseWriter, r *http.Request) {
-	cookie, _ := r.Cookie("SessionToken")
+	cookie, err := r.Cookie("SessionToken")
+	if(err!=nil){
+		log.Println("Error obtaining sid: ", err)
+	}
 	SessionToken := cookie.Value
 	sid = SessionToken
 	log.Println("Update SessionToken")
