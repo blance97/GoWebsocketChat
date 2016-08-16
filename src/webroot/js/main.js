@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    checkLogin()
     for (i = 0; i < array.length; i++) {
         printJSON(array[i])
     }
@@ -80,7 +81,11 @@ function getUser() {
     });
     return Username
 }
-
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+}
 function changews(RoomName) {
     console.log("change room")
     localStorage.setItem("RoomName", RoomName);

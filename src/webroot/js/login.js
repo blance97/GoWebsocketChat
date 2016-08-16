@@ -87,7 +87,7 @@ function checkLogin() {
         url: '/checkSession',
         async: false,
         error: function() {
-            window.location = "index.html"
+            window.location = "home.html"
         }
     });
 }

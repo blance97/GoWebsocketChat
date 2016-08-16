@@ -13,8 +13,8 @@ var maxId int = 0
 
 // Chat client.
 type Client struct {
-	Username   string
-	//id 		int
+	//Username   string
+	id 		int
 	ws     *websocket.Conn
 	server Server
 	ch     chan Message
@@ -22,7 +22,7 @@ type Client struct {
 }
 
 // Create new chat client.
-func NewClient(ws *websocket.Conn, server Server, username string) Client {
+func NewClient(ws *websocket.Conn, server Server) Client {
 
 	if ws == nil {
 		panic("ws cannot be nil")
@@ -31,10 +31,10 @@ func NewClient(ws *websocket.Conn, server Server, username string) Client {
 	//if server == nil {
 		//panic("server cannot be nil")
 	//}
-	//maxId++
+	maxId++
 	ch := make(chan Message, channelBufSize)
 	doneCh := make(chan bool)
-	return Client{username, ws, server, ch, doneCh}
+	return Client{maxId, ws, server, ch, doneCh}
 }
 
 

@@ -15,7 +15,7 @@ import (
 type Server struct {
 	Roomname  string
 	messages  []Message
-	clients   map[string]Client
+	clients   map[int]Client
 	addCh     chan Client
 	delCh     chan Client
 	sendAllCh chan Message
@@ -26,7 +26,7 @@ type Server struct {
 // Create new chat server.
 func NewServer(Roomname string) Server {
 	messages := []Message{}
-	clients := make(map[string]Client)
+	clients := make(map[int]Client)
 	addCh := make(chan Client) //inialize channlls
 	delCh := make(chan Client)
 	sendAllCh := make(chan Message)
@@ -142,8 +142,7 @@ func (s Server) Listen(RoomName string) {
 				s.errCh <- err
 			}
 		}()
-		username, _ := getUsername(sid)
-		client := NewClient(ws, s, username) //create new websocket with to server
+		client := NewClient(ws,s) //create new websocket with to server
 		s.Add(client)                        //Add client to server
 		client.Listen()                      //Fires go routine to listen write
 	}
@@ -156,15 +155,15 @@ func (s Server) Listen(RoomName string) {
 		// Add new a client
 		case c := <-s.addCh: // send to channel c
 			log.Println("Added new client ", RoomName)
-					log.Println("Adding new Client: " , c.Username)// switch back to max id for now
-			s.clients[c.Username] = c
+
+			s.clients[c.id] = c
 			log.Println("Now", len(s.clients), "clients connected.")
 			s.sendPastMessages(c)
 
 		// del a client
 		case c := <-s.delCh: // Send to channgel C
 			log.Println("Delete client")
-			delete(s.clients, c.Username)
+			delete(s.clients, c.id)
 
 		// broadcast message for all clients
 		case msg := <-s.sendAllCh:

@@ -41,9 +41,6 @@ var sid string
 func SetSessionID(w http.ResponseWriter, r *http.Request) {
 	// mu.Lock()
 	// defer mu.Unlock()
-	//data := getJSON(r)
-	//username := data["Username"].(string)
-	//password := data["Pass"].(string)
 	username := r.FormValue("Username")
 	password := r.FormValue("password")
 	log.Printf("Username %s pass %s", username, password)
@@ -106,6 +103,8 @@ checks the SessionID
 func checkSession(w http.ResponseWriter, r *http.Request) {
 	cookie, _ := r.Cookie("SessionToken")
 	SessionToken := cookie.Value
+	sid = SessionToken
+	log.Println("Update SessionToken")
 	if SessionToken != "0" {
 		w.WriteHeader(http.StatusOK)
 		return
