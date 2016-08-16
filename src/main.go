@@ -8,10 +8,11 @@ import (
 var mu sync.Mutex
 var db = InitDB("database/ChatDB")
 func main() {
+	initRooms()
 	CreateUserTable()// add in mutex bitch
 	log.SetFlags(log.Lshortfile)
-	server := NewServer("/entry/room1")
-	go server.Listen("room1")
+//	server := NewServer("/entry/room1")
+	//go server.Listen("room1")
 	http.Handle("/", http.FileServer(http.Dir("webroot")))
 	 http.HandleFunc("/createRoom", RoomHandler)
 	 	 http.HandleFunc("/getRooms", getRooms)

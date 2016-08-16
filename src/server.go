@@ -156,6 +156,7 @@ func (s Server) Listen(RoomName string) {
 		// Add new a client
 		case c := <-s.addCh: // send to channel c
 			log.Println("Added new client ", RoomName)
+					log.Println("Adding new Client: " , c.Username)// switch back to max id for now
 			s.clients[c.Username] = c
 			log.Println("Now", len(s.clients), "clients connected.")
 			s.sendPastMessages(c)

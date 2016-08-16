@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"os"
 	"bufio"
+	"io/ioutil"
 //	"log"
 )
 
@@ -47,4 +48,14 @@ func readLines(path string) ([]string, error) {
     lines = append(lines, scanner.Text())
   }
   return lines, scanner.Err()
+}
+func initRooms(){
+	mu.Lock()
+	defer mu.Unlock()
+	files, _ := ioutil.ReadDir("log/")
+	for _, file := range files {
+		server := NewServer("/entry/" + file.Name())
+		go server.Listen(file.Name())
+	}
+
 }
