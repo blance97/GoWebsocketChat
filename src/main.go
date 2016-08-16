@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
+	"sync"
 )
-
+var mu sync.Mutex
 var db = InitDB("database/ChatDB")
-
 func main() {
 	CreateUserTable()// add in mutex bitch
 	log.SetFlags(log.Lshortfile)

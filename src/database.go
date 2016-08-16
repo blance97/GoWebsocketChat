@@ -119,9 +119,7 @@ func getUsername(sessionToken string) (string, error) {
 }
 func storeNewSessionToken(sid string, Username string) {
 	sql_stmt := `UPDATE Users SET SessionID = $1 WHERE Username = $2`
-		dbMu.Lock()
 	if _, err := db.Exec(sql_stmt, sid, Username); err != nil {
-			dbMu.Unlock()
 		log.Println("Error in storing sessionToken: ", err)
 		return
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	//"log"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -34,37 +35,26 @@ type Cookie struct {
 	Raw      string
 	Unparsed []string // Raw text of unparsed attribute-value pairs
 }
+
 var sid string
-func RoomHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		server := NewServer("/entry/room2") // start server
-		go server.Listen("room2")
-	}
-}
-
-
 
 func SetSessionID(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL.Path)
-	socketClientIP := strings.Split(r.RemoteAddr, ":")
-	cookie, err := r.Cookie("SessionToken")
+	// mu.Lock()
+	// defer mu.Unlock()
+	//data := getJSON(r)
+	//username := data["Username"].(string)
+	//password := data["Pass"].(string)
 	username := r.FormValue("Username")
 	password := r.FormValue("password")
-	if err == http.ErrNoCookie {
-		cookie = &http.Cookie{
-			Name:  "SessionToken",
-			Value: "0",
-		}
-	}
+	log.Printf("Username %s pass %s", username, password)
+	socketClientIP := strings.Split(r.RemoteAddr, ":")
 	if r.URL.Path == "/login" {
-		log.Println("login")
-		redirectTarget := "/"
 		p, err := getUserPassword(username)
 		if err != nil {
 			log.Println("Error in getpassword ", err)
-			http.Redirect(w, r, "/login.html", 302)
+			http.Error(w, "Invalid Username or Password", 400)
+			return
 		}
-
 		var token string
 		if password == p {
 			log.Printf("Password1: %s Password2: %s", password, p)
@@ -77,27 +67,37 @@ func SetSessionID(w http.ResponseWriter, r *http.Request) {
 			}
 			cookie := &http.Cookie{Name: "SessionToken", Value: token, Expires: expiration}
 			http.SetCookie(w, cookie)
-			redirectTarget = "/chat.html"
 			sid = token
-			StoreUserInfo(socketClientIP[0], username, password, token)
+			StoreUserInfo(socketClientIP[0], username, password, sid)
+			w.WriteHeader(http.StatusOK)
+			return
 		}
-		http.Redirect(w, r, redirectTarget, 302)
-		http.SetCookie(w, cookie)
+			http.Error(w, "Invalid Username or Passwords", 400)
+			return
 	}
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
 	log.Println("Logout Hanlder")
-	cookies, _ := r.Cookie("SessionToken")
+	cookies, err := r.Cookie("SessionToken")
+	if err != nil {
+		log.Println("Error obtaining SessionToken", err)
+		return
+	}
 	SessionToken := cookies.Value
 	username, _ := getUsername(SessionToken)
+	log.Println("USERNAME", username)
 	log.Println("Cleared Logout")
 	cookie := &http.Cookie{
 		Name:  "SessionToken",
 		Value: "0",
 	}
-	http.SetCookie(w, cookie)
 	storeNewSessionToken(cookie.Value, username)
+	http.SetCookie(w, cookie)
+		w.WriteHeader(http.StatusOK)
+	return
 }
 
 /**
@@ -131,6 +131,32 @@ func getJSON(r *http.Request) map[string]interface{} {
 	defer r.Body.Close()
 	return data
 } //decode JSON
+
+func RoomHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		data := getJSON(r)
+		server := NewServer("/entry/" + data["RoomName"].(string)) // start server
+		go server.Listen(data["RoomName"].(string))
+	}
+}
+
+type Roomier struct {
+	Rooms []string
+}
+
+func getRooms(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	files, _ := ioutil.ReadDir("log/")
+	var Room []string
+	for _, file := range files {
+		Room = append(Room, file.Name())
+		//log.Println(file.Name())
+	}
+	q := Roomier{Rooms: Room}
+	json.NewEncoder(w).Encode(q)
+	//log.Println(len(files))
+}
 
 /**
 Returns User so that it can validate whether or not a message belongs to them.
