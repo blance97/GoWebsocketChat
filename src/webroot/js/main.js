@@ -37,12 +37,6 @@ function scrollBottom() {
 
 ws = new WebSocket("ws://localhost:80/entry/" + localStorage.getItem("RoomName"));
 
-function changews(RoomName) {
-    console.log("change room")
-    localStorage.setItem("RoomName", RoomName);
-    console.log(RoomName)
-    window.location.reload()
-}
 
 ws.onopen = function() {
     $("#ChatPanel").html("CONNECTED")
@@ -70,11 +64,11 @@ function printJSON(data) {
 }
 
 function getUser() {
-    var result = null;
+    var Username = null;
     $.ajax({
         type: 'GET',
         url: '/getUser',
-        async: false,
+        async: true,
         success: function(data) {
             var obj = jQuery.parseJSON(data)
             Username = obj.Username
@@ -82,11 +76,31 @@ function getUser() {
     });
     return Username
 }
-
+function changews(RoomName) {
+    console.log("change room")
+    localStorage.setItem("RoomName", RoomName);
+    console.log(RoomName)
+    window.location.reload()
+}
+function getRooms(){
+    $("#RoomChanger").html("")
+  $.ajax({
+      type: 'GET',
+      url: '/getRooms',
+      async: true,
+      success: function(data) {
+           var obj = jQuery.parseJSON(data)
+           for(i = 0; i < obj.Rooms.length; i++){
+             	    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" >' +  obj.Rooms[i] + '</a>');
+           }
+      }
+  });
+}
 function CreateRoom() {
     $.ajax({
         type: 'POST',
         url: '/createRoom',
+        async: true,
         data: JSON.stringify({
             RoomName: $('#RoomName').val()
         }),
@@ -99,12 +113,12 @@ function CreateRoom() {
 }
 
 function logout() {
-    $.ajax({
-        type: 'GET',
-        url: '/logout',
-        async: false,
-        success: function() {
-            window.location = "index.html"
-        }
-    });
+  $.ajax({
+    type: "GET",
+    url: "http://localhost/logout",
+    //data: {AppName: "Proline", Properties:null, Object: ""}, // An object, not a string.
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function(data){window.location = "home.html"}
+  })
 }

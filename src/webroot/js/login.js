@@ -1,4 +1,22 @@
 $(document).ready(function() {
+    $("#myForm").submit(function(e) {
+        var postData = $(this).serializeArray();
+        var formURL = $(this).attr("action");
+        $.ajax({
+            url: formURL,
+            type: "POST",
+            data: postData,
+            success: function(data, textStatus, jqXHR) {
+              window.location = "index.html"
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                //if fails
+            }
+        });
+        e.preventDefault(); //STOP default action
+      //  e.unbind(); //unbind. to stop multiple form submit.
+    });
+    $("#ajaxform").submit(); //Submit  the FORM
     // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
     $('.modal-trigger').leanModal();
     $("#myForm").bind('ajax:complete', function() {
@@ -39,6 +57,7 @@ function signup() {
         }
     });
 }
+//callback handler for form submit
 
 function login() {
     $.ajax({
@@ -62,13 +81,13 @@ function login() {
 
 }
 
-function checkLogin(){
-      $.ajax({
-          type: 'GET',
-          url: '/checkSession',
-          async: false,
-          error: function() {
-              window.location = "index.html"
-          }
-      });
+function checkLogin() {
+    $.ajax({
+        type: 'GET',
+        url: '/checkSession',
+        async: false,
+        error: function() {
+            window.location = "index.html"
+        }
+    });
 }
