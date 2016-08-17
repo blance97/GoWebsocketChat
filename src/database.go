@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"sync"
 	"time"
@@ -134,4 +134,65 @@ func getUserPassword(Username string) (string, error) {
 		return "", err
 	}
 	return Password, nil
+}
+
+func createRoomTable() {
+	sql_table := `
+	CREATE TABLE IF NOT EXISTS Rooms(
+		Owner TEXT ,
+		Roomname TEXT PRIMARY KEY,
+		Private TEXT,
+		Password TEXT,
+		DateCreated
+	);
+	`
+	_, err := db.Exec(sql_table)
+	if err != nil {
+		log.Print(err)
+	}
+}
+func StoreRoomInfo(Owner string, Roomname string, Private string, Password string) {
+	sql_stmt := `
+	INSERT OR REPLACE INTO Rooms(
+		Owner,
+		Roomname,
+		Private,
+		Password,
+    DateCreated
+	)values(?, ?, ?, ?, ?)
+	`
+	stmt, err := db.Prepare(sql_stmt)
+	if err != nil {
+		log.Print(err)
+	}
+	c := Rooms{
+		Owner:       Owner,
+		Roomname:    Roomname,
+		Private:     Private,
+		Password:    Password,
+		DateCreated: time.Now().Unix(),
+	}
+	if _, err := stmt.Exec(c.Owner, c.Roomname, c.Private, c.Password, c.DateCreated); err != nil {
+		log.Println(err)
+	}
+	log.Println("Store New Room Info")
+}
+func PrivateRoomChecker(Roomname string)(bool){
+	var priv string
+	sql_stmt :=`SELECT Private FROM Rooms WHERE Roomname=$1`
+	if err := db.QueryRow(sql_stmt,Roomname).Scan(&priv); err!=nil{
+		log.Println("Error query for private room checker", err)
+	}
+	if(priv == "false"){
+		return false
+	}
+	return true
+}
+func GetPrivateRoomPass(Roomname string)(string){
+	var pass string
+	sql_stmt :=`SELECT Password FROM Rooms WHERE Roomname=$1`
+	if err := db.QueryRow(sql_stmt,Roomname).Scan(&pass); err!=nil{
+		log.Println("Error query for private room checker", err)
+	}
+	return pass
 }

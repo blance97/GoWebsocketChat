@@ -32,11 +32,6 @@ func NewServer(Roomname string) Server {
 	sendAllCh := make(chan Message)
 	doneCh := make(chan bool)
 	errCh := make(chan error)
-	file := strings.Split(Roomname, "/")
-	_, err := os.OpenFile("log/"+file[2], os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println(err)
-	}
 	// if _, err := io.WriteString(f, "Log File: "+Roomname+"\n "); err != nil {
 	// 	log.Println("Log file Error:", err)
 	// }
@@ -167,11 +162,9 @@ func (s Server) Listen(RoomName string) {
 
 		// broadcast message for all clients
 		case msg := <-s.sendAllCh:
-			log.Println("Send all:", msg)
+			//log.Println("Send all:", msg)
 			s.messages = append(s.messages, msg)
 			s.updateLog(msg.String())
-			//log.Println(reflect.TypeOf(msg.String()))
-			//	StoreRoomInfo(s.Roomname, strings.Join(s.messages,","))
 			s.sendAll(msg)
 
 		case err := <-s.errCh:

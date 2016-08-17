@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -18,7 +19,13 @@ type User struct {
 	SessionID   string
 	DateCreated int64
 }
-
+type Rooms struct {
+	Owner       string
+	Roomname    string
+	Private     string
+	Password    string
+	DateCreated int64
+}
 type Cookie struct {
 	Name       string
 	Value      string
@@ -102,7 +109,7 @@ checks the SessionID
 */
 func checkSession(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("SessionToken")
-	if(err!=nil){
+	if err != nil {
 		log.Println("Error obtaining sid: ", err)
 	}
 	SessionToken := cookie.Value
@@ -134,32 +141,60 @@ func getJSON(r *http.Request) map[string]interface{} {
 	return data
 } //decode JSON
 
-func RoomHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		data := getJSON(r)
-		mu.Lock()
-		server := NewServer("/entry/" + data["RoomName"].(string)) // start server
-		mu.Unlock()
-		go server.Listen(data["RoomName"].(string))
-	}
-}
-
 type Roomier struct {
 	Rooms []string
+	Private []bool
 }
 
-func getRooms(w http.ResponseWriter, r *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	files, _ := ioutil.ReadDir("log/")
-	var Room []string
-	for _, file := range files {
-		Room = append(Room, file.Name())
-		//log.Println(file.Name())
+func RoomHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		data := getJSON(r)
+		log.Println(data)
+		_, err := os.OpenFile("log/"+data["Roomname"].(string), os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println(err)
+		}
+		StoreRoomInfo(data["Owner"].(string), data["Roomname"].(string), data["Private"].(string), data["RoomPass"].(string))
+		server := NewServer("/entry/" + data["Roomname"].(string)) // start server
+		go server.Listen(data["Roomname"].(string))
+		w.WriteHeader(http.StatusOK)
+
+	case "GET":
+		mu.Lock()
+		defer mu.Unlock()
+		files, _ := ioutil.ReadDir("log/")
+		var Room []string
+		var Priv []bool
+		for _, file := range files {
+			Room = append(Room, file.Name())
+			Priv = append(Priv, PrivateRoomChecker(file.Name()))
+			//log.Println(file.Name())
+		}
+		q := Roomier{Rooms: Room,Private:Priv}
+		json.NewEncoder(w).Encode(q)
+		//log.Println(len(files))
 	}
-	q := Roomier{Rooms: Room}
-	json.NewEncoder(w).Encode(q)
-	//log.Println(len(files))
+}
+func CheckPrivateRoom(w http.ResponseWriter, r *http.Request) {
+	data := r.URL.Query()
+	Roomname := data.Get("RoomName")
+	log.Println("CheckPrivateRoom Called")
+	if PrivateRoomChecker(Roomname) {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Error(w, "Not Private Room", 403)
+	return
+}
+func CheckRoomPass(w http.ResponseWriter, r *http.Request){
+	data:=getJSON(r)
+	if data["RoomPass"].(string) == GetPrivateRoomPass(data["RoomName"].(string)){
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Error(w, "Wrong Password", 403)
+	return
 }
 
 /**
