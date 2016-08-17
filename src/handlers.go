@@ -176,6 +176,16 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 		//log.Println(len(files))
 	}
 }
+func DeleteRoom(w http.ResponseWriter, r *http.Request){
+
+	data := r.URL.Query()
+	Roomname := data.Get("RoomName")
+	server := NewServer("/entry/" + Roomname)
+		log.Println(server)
+Done()//test for now
+	w.WriteHeader(http.StatusOK)
+	return
+}
 func CheckPrivateRoom(w http.ResponseWriter, r *http.Request) {
 	data := r.URL.Query()
 	Roomname := data.Get("RoomName")

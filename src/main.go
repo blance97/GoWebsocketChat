@@ -18,6 +18,7 @@ func main() {
 	//go server.Listen("room1")
 	http.Handle("/", http.FileServer(http.Dir("webroot")))
 	http.HandleFunc("/createRoom", RoomHandler)
+	http.HandleFunc("/deleteRoom/", DeleteRoom)
 	http.HandleFunc("/getRooms", RoomHandler)
 	http.HandleFunc("/RoomPerm/",CheckPrivateRoom)
 	http.HandleFunc("/RoomPassCheck",CheckRoomPass)

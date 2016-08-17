@@ -1,13 +1,12 @@
 package main
 
-
 import (
+	"bufio"
 	"crypto/rand"
 	"encoding/base64"
-	"os"
-	"bufio"
 	"io/ioutil"
-//	"log"
+	"os"
+		"log"
 )
 
 // GenerateRandomBytes returns securely generated random bytes.
@@ -36,26 +35,35 @@ func GenerateRandomString(s int) (string, error) {
 }
 
 func readLines(path string) ([]string, error) {
-  file, err := os.Open(path)
-  if err != nil {
-    return nil, err
-  }
-  defer file.Close()
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-  var lines []string
-  scanner := bufio.NewScanner(file)
-  for scanner.Scan() {
-    lines = append(lines, scanner.Text())
-  }
-  return lines, scanner.Err()
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
 }
-func initRooms(){
+func initRooms() {
 	mu.Lock()
 	defer mu.Unlock()
 	files, _ := ioutil.ReadDir("log/")
-	for _, file := range files {
-		server := NewServer("/entry/" + file.Name())
-		go server.Listen(file.Name())
+	if len(files) == 0 {
+		_, err := os.OpenFile("log/"+"room1", os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println(err)
+		}
+		StoreRoomInfo("Admin", "room1", "false", "")
+		server := NewServer("/entry/" + "room1") // start server
+		go server.Listen("room1")
+	} else {
+		for _, file := range files {
+			server := NewServer("/entry/" + file.Name())
+			go server.Listen(file.Name())
+		}
 	}
-
 }

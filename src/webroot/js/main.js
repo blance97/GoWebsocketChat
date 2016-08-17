@@ -158,13 +158,28 @@ function getRooms() {
             var obj = jQuery.parseJSON(data)
             for (i = 0; i < obj.Rooms.length; i++) {
                 if (obj.Private[i]) {
-                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" >' + obj.Rooms[i] + ' (Private)</a>');
+                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display: inline-block;"width:97%>' + obj.Rooms[i] + ' (Private)</a>');
                 } else {
-                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" >' + obj.Rooms[i] + '</a>');
+                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display:inline-block;width:97%">' + obj.Rooms[i] + '</a>');
                 }
+                $("#RoomChanger").append('<a href="javascript:deleteRoom(\'' + obj.Rooms[i] + '\')"><i class="material-icons">delete_forever</i></a><br>')
             }
         }
     });
+}
+
+function deleteRoom(Room){
+  $.ajax({
+      type: 'GET',
+      url: '/deleteRoom/?RoomName=' + Room,
+      async: true,
+      success: function(data) {
+        getRooms()
+      },
+      error: function(data) {
+          alert("Could not delete")
+      }
+  });
 }
 
 function CreateRoom() {

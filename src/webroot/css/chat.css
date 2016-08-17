@@ -16,4 +16,9 @@ p {
     background: #f5f5dc;
     overflow: auto;
 }
-.modal { width: 75% !important ; max-height: 100% !important ;}
+.modal { width: 50% !important ; max-height: 100% !important ;}
+i{
+    /*margin-right: 4px;*/
+    position: relative;
+    top: 2px
+}
