@@ -25,7 +25,7 @@ type Server struct {
 
 // Create new chat server.
 //	var doneCh = make(chan bool)
-func NewServer(Roomname string) Server {
+func NewServer(Roomname string) *Server {
 	messages := []Message{}
 	clients := make(map[int]Client)
 	addCh := make(chan Client) //inialize channlls
@@ -36,7 +36,7 @@ func NewServer(Roomname string) Server {
 	// if _, err := io.WriteString(f, "Log File: "+Roomname+"\n "); err != nil {
 	// 	log.Println("Log file Error:", err)
 	// }
-	return Server{
+	return &Server{
 		Roomname,
 		messages,
 		clients,
@@ -48,7 +48,7 @@ func NewServer(Roomname string) Server {
 	}
 }
 
-func (s Server) updateLog(text string) {
+func (s *Server) updateLog(text string) {
 	file := strings.Split(s.Roomname, "/")
 	f, err := os.OpenFile("log/"+file[2], os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -64,28 +64,28 @@ func (s Server) updateLog(text string) {
 /**
 Store Client into add addclient channel
 */
-func (s Server) Add(c Client) {
+func (s *Server) Add(c Client) {
 	s.addCh <- c
 }
 
 /**
 Store Client into add delclient channel
 */
-func (s Server) Del(c Client) {
+func (s *Server) Del(c Client) {
 	s.delCh <- c
 }
 
 /**
 Store message into add message channel(type message)
 */
-func (s Server) SendAll(msg Message) {
+func (s *Server) SendAll(msg Message) {
 	s.sendAllCh <- msg
 }
 
 /**
 Store boolean{true} into boolean channel
 */
-func (s Server)Done() {
+func (s *Server)Done() {
 		//log.Println("hey1",s.doneCh)
 	s.doneCh <- true
 	//log.Println("hey",s.doneCh)
@@ -94,14 +94,14 @@ func (s Server)Done() {
 /**
 Store Error into err chanel
 */
-func (s Server) Err(err error) {
+func (s *Server) Err(err error) {
 	s.errCh <- err
 }
 
 /**
 The server stores messages into s.messages.  writes out entire message history to client
 */
-func (s Server) sendPastMessages(c Client) {
+func (s *Server) sendPastMessages(c Client) {
 	file := strings.Split(s.Roomname, "/")
 	stuff, err := readLines("log/" + file[2])
 	if err != nil {
@@ -117,7 +117,7 @@ func (s Server) sendPastMessages(c Client) {
 /**
 Sends message to all conected clients
 */
-func (s Server) sendAll(msg Message) {
+func (s *Server) sendAll(msg Message) {
 	for _, c := range s.clients {
 		c.Write(msg)
 	}
@@ -125,7 +125,7 @@ func (s Server) sendAll(msg Message) {
 
 // Listen and serve.
 // It serves client connection and broadcast request.
-func (s Server) Listen(RoomName string) {
+func (s *Server) Listen(RoomName string) {
 
 	log.Println("Listening server...", RoomName)
 
