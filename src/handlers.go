@@ -142,7 +142,7 @@ func getJSON(r *http.Request) map[string]interface{} {
 } //decode JSON
 
 type Roomier struct {
-	Rooms []string
+	Rooms   []string
 	Private []bool
 }
 
@@ -151,10 +151,11 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		data := getJSON(r)
 		log.Println(data)
-		_, err := os.OpenFile("log/"+data["Roomname"].(string), os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
+		file, err := os.OpenFile("log/"+data["Roomname"].(string), os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			log.Println(err)
 		}
+		file.Close()
 		StoreRoomInfo(data["Owner"].(string), data["Roomname"].(string), data["Private"].(string), data["RoomPass"].(string))
 		server := NewServer("/entry/" + data["Roomname"].(string)) // start server
 		go server.Listen(data["Roomname"].(string))
@@ -171,18 +172,22 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 			Priv = append(Priv, PrivateRoomChecker(file.Name()))
 			//log.Println(file.Name())
 		}
-		q := Roomier{Rooms: Room,Private:Priv}
+		q := Roomier{Rooms: Room, Private: Priv}
 		json.NewEncoder(w).Encode(q)
 		//log.Println(len(files))
 	}
 }
-func DeleteRoom(w http.ResponseWriter, r *http.Request){
+func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 
 	data := r.URL.Query()
 	Roomname := data.Get("RoomName")
-	server := NewServer("/entry/" + Roomname)
-		log.Println(server)
-Done()//test for now
+	RemoveRoom(Roomname)
+	mu.Lock()
+	err := os.Remove("log/" + Roomname)
+	mu.Unlock()
+	if err != nil {
+		log.Println("Could not remove file: ", err)
+	}
 	w.WriteHeader(http.StatusOK)
 	return
 }
@@ -197,9 +202,9 @@ func CheckPrivateRoom(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Private Room", 403)
 	return
 }
-func CheckRoomPass(w http.ResponseWriter, r *http.Request){
-	data:=getJSON(r)
-	if data["RoomPass"].(string) == GetPrivateRoomPass(data["RoomName"].(string)){
+func CheckRoomPass(w http.ResponseWriter, r *http.Request) {
+	data := getJSON(r)
+	if data["RoomPass"].(string) == GetPrivateRoomPass(data["RoomName"].(string)) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}

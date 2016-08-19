@@ -10,9 +10,9 @@ var mu sync.Mutex
 var db = InitDB("database/ChatDB")
 
 func main() {
-	initRooms()
 	CreateUserTable()
 	createRoomTable()
+	initRooms()
 	log.SetFlags(log.Lshortfile)
 	//	server := NewServer("/entry/room1")
 	//go server.Listen("room1")

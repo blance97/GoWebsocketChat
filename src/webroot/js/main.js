@@ -158,7 +158,7 @@ function getRooms() {
             var obj = jQuery.parseJSON(data)
             for (i = 0; i < obj.Rooms.length; i++) {
                 if (obj.Private[i]) {
-                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display: inline-block;"width:97%>' + obj.Rooms[i] + ' (Private)</a>');
+                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display:inline-block;width:97%">' + obj.Rooms[i] +" (Private)" + '</a>');
                 } else {
                     $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display:inline-block;width:97%">' + obj.Rooms[i] + '</a>');
                 }

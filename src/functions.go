@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"io/ioutil"
+	"log"
 	"os"
-		"log"
 )
 
 // GenerateRandomBytes returns securely generated random bytes.
@@ -46,6 +46,7 @@ func readLines(path string) ([]string, error) {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
+	file.Close()
 	return lines, scanner.Err()
 }
 func initRooms() {

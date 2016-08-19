@@ -19,19 +19,19 @@ type Server struct {
 	addCh     chan Client
 	delCh     chan Client
 	sendAllCh chan Message
-//	doneCh    chan bool
+	doneCh    chan bool
 	errCh     chan error
 }
 
 // Create new chat server.
-	var doneCh = make(chan bool)
+//	var doneCh = make(chan bool)
 func NewServer(Roomname string) Server {
 	messages := []Message{}
 	clients := make(map[int]Client)
 	addCh := make(chan Client) //inialize channlls
 	delCh := make(chan Client)
 	sendAllCh := make(chan Message)
-
+	doneCh := make(chan bool)
 	errCh := make(chan error)
 	// if _, err := io.WriteString(f, "Log File: "+Roomname+"\n "); err != nil {
 	// 	log.Println("Log file Error:", err)
@@ -43,7 +43,7 @@ func NewServer(Roomname string) Server {
 		addCh,
 		delCh,
 		sendAllCh,
-		//doneCh,
+		doneCh,
 		errCh,
 	}
 }
@@ -85,9 +85,9 @@ func (s Server) SendAll(msg Message) {
 /**
 Store boolean{true} into boolean channel
 */
-func Done() {
+func (s Server)Done() {
 		//log.Println("hey1",s.doneCh)
-	doneCh <- true
+	s.doneCh <- true
 	//log.Println("hey",s.doneCh)
 }
 
@@ -156,7 +156,6 @@ func (s Server) Listen(RoomName string) {
 			s.clients[c.id] = c
 			log.Println("Now", len(s.clients), "clients connected.")
 			s.sendPastMessages(c)
-
 		// del a client
 		case c := <-s.delCh: // Send to channgel C
 			log.Println("Delete client")
@@ -172,7 +171,7 @@ func (s Server) Listen(RoomName string) {
 		case err := <-s.errCh:
 			log.Println("Error:", err.Error())
 
-		case <-doneCh:
+		case <-s.doneCh:
 			log.Println("Closing Room" + RoomName)
 			return
 		}

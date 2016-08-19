@@ -177,21 +177,27 @@ func StoreRoomInfo(Owner string, Roomname string, Private string, Password strin
 	}
 	log.Println("Store New Room Info")
 }
-func PrivateRoomChecker(Roomname string)(bool){
+func RemoveRoom(Roomname string) {
+	sql_stmt := `DELETE FROM Rooms WHERE Roomname=$1`
+	if _, err := db.Exec(sql_stmt, Roomname); err != nil {
+		log.Println("Error Deleting Room From Database", err)
+	}
+}
+func PrivateRoomChecker(Roomname string) bool {
 	var priv string
-	sql_stmt :=`SELECT Private FROM Rooms WHERE Roomname=$1`
-	if err := db.QueryRow(sql_stmt,Roomname).Scan(&priv); err!=nil{
+	sql_stmt := `SELECT Private FROM Rooms WHERE Roomname=$1`
+	if err := db.QueryRow(sql_stmt, Roomname).Scan(&priv); err != nil {
 		log.Println("Error query for private room checker", err)
 	}
-	if(priv == "false"){
+	if priv == "false" {
 		return false
 	}
 	return true
 }
-func GetPrivateRoomPass(Roomname string)(string){
+func GetPrivateRoomPass(Roomname string) string {
 	var pass string
-	sql_stmt :=`SELECT Password FROM Rooms WHERE Roomname=$1`
-	if err := db.QueryRow(sql_stmt,Roomname).Scan(&pass); err!=nil{
+	sql_stmt := `SELECT Password FROM Rooms WHERE Roomname=$1`
+	if err := db.QueryRow(sql_stmt, Roomname).Scan(&pass); err != nil {
 		log.Println("Error query for private room checker", err)
 	}
 	return pass
