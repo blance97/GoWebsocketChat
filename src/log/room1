@@ -1,1 +1,10 @@
-{"author":"lance","time":"9:09:40 AM","body":"dsad"}
+{"Roomname":"room1","author":"lance","time":"10:42:56 PM","body":"dd"}
+{"Roomname":"room1","author":"bob","time":"10:44:09 PM","body":"\tdata := r.URL.Query()\n\tRoomname := data.Get(\"RoomName\")\n\tRemoveRoom(Roomname)\n\tmu.Lock()\n\terr := os.Remove(\"log/\" + Roomname)\n\tmu.Unlock()\n\tif err != nil {\n\t\tlog.Println(\"Could not remove file: \", err)\n\t}\n\tw.WriteHeader(http.StatusOK)\n\treturn"}
+{"Roomname":"room1","author":"lance","time":"10:44:56 PM","body":"cds"}
+{"Roomname":"room1","author":"lance","time":"11:11:23 PM","body":"tt"}
+{"Roomname":"room1","author":"lance","time":"11:11:32 PM","body":"ait there bitch"}
+{"Roomname":"room1","author":"bob","time":"11:11:42 PM","body":"suckea"}
+{"Roomname":"room1","author":"lance","time":"11:11:51 PM","body":"ifhgt me nigga"}
+{"Roomname":"room1","author":"bob","time":"11:11:55 PM","body":"ok, where?\n"}
+{"Roomname":"room1","author":"lance","time":"11:11:58 PM","body":"here\n"}
+{"Roomname":"room1","author":"lance","time":"11:29:00 PM","body":"gfd"}

@@ -1,9 +1,9 @@
 package main
 
-
 import (
 	"io"
 	"log"
+
 	"golang.org/x/net/websocket"
 )
 
@@ -14,7 +14,7 @@ var maxId int = 0
 // Chat client.
 type Client struct {
 	//Username   string
-	id 		int
+	id     int
 	ws     *websocket.Conn
 	server *Server
 	ch     chan Message
@@ -36,7 +36,6 @@ func NewClient(ws *websocket.Conn, server *Server) Client {
 	doneCh := make(chan bool)
 	return Client{maxId, ws, server, ch, doneCh}
 }
-
 
 func (c Client) Write(msg Message) {
 	c.ch <- msg //  If client receives a message do nothing)  This puts message into c.ch which is used to listen write
@@ -76,7 +75,7 @@ func (c Client) listenRead() {
 		//Sends message to all clients(this one is always called )
 		var msg Message
 		err := websocket.JSON.Receive(c.ws, &msg)
-		//log.Println("MESSAGE: ", &msg)
+		log.Println("MESSAGE: ", &msg)
 		if err == io.EOF {
 			c.doneCh <- true // if end of file delete user which is called in listnwrite
 		} else if err != nil {

@@ -2,10 +2,11 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"sync"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var dbMu sync.Mutex
@@ -176,6 +177,14 @@ func StoreRoomInfo(Owner string, Roomname string, Private string, Password strin
 		log.Println(err)
 	}
 	log.Println("Store New Room Info")
+}
+func RoomExist(Roomname string) bool {
+	sql_stmt := `SELECT * FROM Rooms WHERE Rooms WHERE Roomname = $1`
+	err := db.QueryRow(sql_stmt, Roomname).Scan()
+	if err == sql.ErrNoRows {
+		return false
+	}
+	return true
 }
 func RemoveRoom(Roomname string) {
 	sql_stmt := `DELETE FROM Rooms WHERE Roomname=$1`

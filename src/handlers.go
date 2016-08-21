@@ -147,21 +147,20 @@ type Roomier struct {
 }
 
 func RoomHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
+	log.Println("Room Handler: ", r.URL.Path)
+	switch r.URL.Path {
+	case "/createRoom":
 		data := getJSON(r)
 		log.Println(data)
 		file, err := os.OpenFile("log/"+data["Roomname"].(string), os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			log.Println(err)
 		}
-		file.Close()
 		StoreRoomInfo(data["Owner"].(string), data["Roomname"].(string), data["Private"].(string), data["RoomPass"].(string))
-		server := NewServer("/entry/" + data["Roomname"].(string)) // start server
-		go server.Listen(data["Roomname"].(string))
+		file.Close()
 		w.WriteHeader(http.StatusOK)
-
-	case "GET":
+		return
+	case "/getRooms":
 		mu.Lock()
 		defer mu.Unlock()
 		files, _ := ioutil.ReadDir("log/")
@@ -170,11 +169,48 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 		for _, file := range files {
 			Room = append(Room, file.Name())
 			Priv = append(Priv, PrivateRoomChecker(file.Name()))
-			//log.Println(file.Name())
 		}
 		q := Roomier{Rooms: Room, Private: Priv}
 		json.NewEncoder(w).Encode(q)
-		//log.Println(len(files))
+		return
+	case "/getOldMessage/":
+		mu.Lock()
+		defer mu.Unlock()
+		data := r.URL.Query()
+		Roomname := data.Get("RoomName")
+		stuff, err := readLines("log/" + Roomname)
+		if err != nil {
+			log.Println("read: ", err)
+		}
+		var msg2 []Message
+		for _, v := range stuff {
+			var msg Message
+			json.Unmarshal([]byte(v), &msg)
+			msg2 = append(msg2, msg)
+		}
+		json.NewEncoder(w).Encode(msg2)
+		return
+	case "/deleteRoom/":
+		data := r.URL.Query()
+		Roomname := data.Get("RoomName")
+		RemoveRoom(Roomname)
+		mu.Lock()
+		err := os.Remove("log/" + Roomname)
+		mu.Unlock()
+		if err != nil {
+			log.Println("Could not remove file: ", err)
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	case "/changeRoom/": //Change the room. sends back if the room is valid or not.
+		data := r.URL.Query()
+		Roomname := data.Get("RoomName")
+		if RoomExist(Roomname) {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Error(w, "Room Does Not Exist", 403)
+		return
 	}
 }
 func DeleteRoom(w http.ResponseWriter, r *http.Request) {

@@ -11,13 +11,11 @@ $(document).ready(function() {
                 $('#PrivatePass').hide()
             }
         });
-    for (i = 0; i < array.length; i++) {
-        printJSON(array[i])
-    }
     if (localStorage.getItem("RoomName") == null) {
         localStorage.setItem("RoomName", "room1");
     }
     $('#CurrentRoom').html("CurrentRoom: " + localStorage.getItem("RoomName"))
+    getOldMessage(localStorage.getItem("RoomName"))
     $('.modal-trigger').leanModal();
     $('#loggedinAs').html("Current User: " + getUser())
     console.log("User: " + getUser())
@@ -33,6 +31,7 @@ $(document).ready(function() {
         var n = d.toLocaleTimeString();
 
         data = JSON.stringify({
+            Roomname: localStorage.getItem("RoomName"),
             author: getUser(),
             time: n,
             body: $('#inputChat').val()
@@ -56,7 +55,7 @@ function scrollBottom() {
     });
 }
 
-var ws = new WebSocket("ws://" + window.location.host + "/entry/" + localStorage.getItem("RoomName"));
+var ws = new WebSocket("ws://" + window.location.host + "/entry");
 ws.onopen = function() {
     $("#ChatPanel").html("CONNECTED")
 };
@@ -69,10 +68,10 @@ var array = []
     This function is screwy because onload it loads previous messages so i have ot push to array TODO Fix
     */
 ws.onmessage = function(event) {
-    //  console.log("Recieved Message: " + event.data)
-    array.push(event.data)
-    printJSON(event.data)
-
+    var obj = jQuery.parseJSON(data)
+    if (obj.Roomname == localStorage.getItem("RoomName")) {
+        printJSON(event.data)
+    }
 }
 
 function printJSON(data) {
@@ -80,6 +79,26 @@ function printJSON(data) {
     Username = obj.author
     Text = obj.body
     $("#Chatbox").append('<p><b>' + Username + '</b>' + "(" + '<b>' + obj.time + '</b>' + "): " + Text + '</p>')
+}
+
+function getOldMessage(Roomname) {
+    var request = $.ajax({
+        type: 'GET',
+        url: '/getOldMessage/?RoomName=' + Roomname,
+        async: false,
+        success: function(data) {
+            var obj = jQuery.parseJSON(data)
+            if (obj == null) {
+                return
+            }
+            for (i = 0; i < obj.length; i++) {
+                Username = obj[i].author
+                Time = obj[i].time
+                Test = obj[i].body
+                $("#Chatbox").append('<p><b>' + Username + '</b>' + "(" + '<b>' + Time + '</b>' + "): " + Test + '</p>')
+            }
+        }
+    });
 }
 
 function getUser() {
@@ -158,7 +177,7 @@ function getRooms() {
             var obj = jQuery.parseJSON(data)
             for (i = 0; i < obj.Rooms.length; i++) {
                 if (obj.Private[i]) {
-                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display:inline-block;width:97%">' + obj.Rooms[i] +" (Private)" + '</a>');
+                    $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display:inline-block;width:97%">' + obj.Rooms[i] + " (Private)" + '</a>');
                 } else {
                     $("#RoomChanger").append('<a href="javascript:changews(\'' + obj.Rooms[i] + '\');" class="collection-item" style="display:inline-block;width:97%">' + obj.Rooms[i] + '</a>');
                 }
@@ -168,18 +187,18 @@ function getRooms() {
     });
 }
 
-function deleteRoom(Room){
-  $.ajax({
-      type: 'GET',
-      url: '/deleteRoom/?RoomName=' + Room,
-      async: true,
-      success: function(data) {
-        getRooms()
-      },
-      error: function(data) {
-          alert("Could not delete")
-      }
-  });
+function deleteRoom(Room) {
+    $.ajax({
+        type: 'GET',
+        url: '/deleteRoom/?RoomName=' + Room,
+        async: true,
+        success: function(data) {
+            getRooms()
+        },
+        error: function(data) {
+            alert("Could not delete")
+        }
+    });
 }
 
 function CreateRoom() {
