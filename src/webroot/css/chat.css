@@ -22,5 +22,8 @@ i{
     top: 2px
 }
 #users{
-  width: 7%;
+  width: 75%;
+  height: 500px;
+  width: 100%;
+  overflow:auto;
 }

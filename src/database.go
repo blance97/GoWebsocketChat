@@ -132,13 +132,16 @@ func listUsersinRoom(Roomname string) []string {
 	return result
 }
 
-func getUserInfo(socketClientIP string) (string, error) {
-	var ip string
-	sql_stmt := "SELECT Username FROM Users WHERE IP = $1"
-	if err := db.QueryRow(sql_stmt, socketClientIP).Scan(&ip); err != nil {
-		return "", err
+/**
+TODO: ADD more info for user later.
+*/
+func getUserInfo(Username string) User {
+	var result User
+	sql_stmt := "SELECT DateCreated FROM Users WHERE Username = $1"
+	if err := db.QueryRow(sql_stmt, Username).Scan(&result.DateCreated); err != nil {
+		log.Println("Error Query get user info", err)
 	}
-	return ip, nil
+	return result
 }
 
 func getUsername(sessionToken string) (string, error) {

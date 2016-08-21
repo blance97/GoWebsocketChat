@@ -2,6 +2,7 @@ var Checked
 $(document).ready(function() {
     checkLogin()
     listUserRoom()
+
     $('#RoomName').val("")
     $('#test6').prop('checked', false);
     $('#test6').change(
@@ -12,12 +13,13 @@ $(document).ready(function() {
                 $('#PrivatePass').hide()
             }
         });
-    if (localStorage.getItem("RoomName") == null) {
+    if (localStorage.getItem("RoomName") === null) {
         localStorage.setItem("RoomName", "room1");
     }
     $('#CurrentRoom').html("CurrentRoom: " + localStorage.getItem("RoomName"))
     getOldMessage(localStorage.getItem("RoomName"))
     $('.modal-trigger').leanModal();
+    $(".button-collapse").sideNav();
     $('#loggedinAs').html("Current User: " + getUser())
     console.log("User: " + getUser())
     $("#inputChat").keyup(function(event) {
@@ -32,11 +34,12 @@ $(document).ready(function() {
         var n = d.toLocaleTimeString();
 
         data = JSON.stringify({
-            Roomname: localStorage.getItem("RoomName"),
-            author: getUser(),
-            time: n,
-            body: $('#inputChat').val()
-        }), ws.send(data);
+                Roomname: localStorage.getItem("RoomName"),
+                author: getUser(),
+                time: n,
+                body: $('#inputChat').val()
+            }),
+            ws.send(data);
         console.log($('#inputChat').val())
         $('#inputChat').val("");
         scrollBottom()
@@ -59,15 +62,14 @@ function scrollBottom() {
 var ws = new WebSocket("ws://" + window.location.host + "/entry");
 ws.onopen = function() {
     $("#ChatPanel").html("CONNECTED")
-};
+}
 ws.onclose = function() {
     $("#ChatPanel").html("DISCONNECTED")
     ws.close()
 };
-var array = []
-    /**
-    This function is screwy because onload it loads previous messages so i have ot push to array TODO Fix
-    */
+/**
+This function is screwy because onload it loads previous messages so i have ot push to array TODO Fix
+*/
 ws.onmessage = function(event) {
     $("#ChatPanel").html("CONNECTED")
     var obj = jQuery.parseJSON(data)
@@ -117,21 +119,44 @@ function getUser() {
     return Username
 }
 
+function showUserInfo() {
+    $('.button-collapse').sideNav('show');
+}
+
 function listUserRoom() {
+    $("#users").html("")
     $.ajax({
         type: 'GET',
         url: '/listUsersinRoom/?RoomName=' + localStorage.getItem("RoomName"),
         async: false,
         success: function(data) {
             var obj = jQuery.parseJSON(data)
+            if (obj == null) {
+                return
+            }
             for (i = 0; i < obj.length; i++) {
-                $("#users").append('<a href="#!" class="collection-item">'+obj[i]+'</a>')
+                $("#users").append('<a href="#" onclick="getUserInfo(\'' + obj[i] + '\')" data-activates="slide-out" class="button-collapse collection-item">' + obj[i] + '</a>')
             }
         },
         error: function(data) {
             alert("Could not recieve data from server")
         }
 
+    });
+}
+
+function getUserInfo(user) {
+    console.log("obtaining info for user: " + user)
+    $.ajax({
+        type: 'GET',
+        url: '/getUserInfo/?Username=' + user,
+        async: true,
+        success: function(data) {
+        $('#slide-out > li').remove();
+          var obj = jQuery.parseJSON(data)
+          $("#slide-out").append("<li><h5>Username: <b>" + user + "</h5></li>")
+          $("#slide-out").append("<li><h5>"+ "Date Created:<br><b> " + timeConverter(obj.DateCreated) + "</h5></li>")
+        }
     });
 }
 
@@ -285,4 +310,17 @@ function logout() {
             window.location = "home.html"
         }
     })
+}
+function timeConverter(UNIX_timestamp) {
+
+    var a = new Date(UNIX_timestamp * 1000);
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var year = a.getFullYear();
+    var month = months[a.getMonth()];
+    var date = a.getDate();
+    var hour = a.getHours();
+    var min = "0" + a.getMinutes();
+    var sec = "0" + a.getSeconds();
+    var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min.substr(-2) + ':' + sec.substr(-2);
+    return time;
 }

@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
 
 // Chat client.
@@ -277,6 +279,11 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		data := r.URL.Query()
 		Roomname := data.Get("RoomName")
 		json.NewEncoder(w).Encode(listUsersinRoom(Roomname))
+
+	case "/getUserInfo/":
+		data := r.URL.Query()
+		Username := data.Get("Username")
+		json.NewEncoder(w).Encode(getUserInfo(Username))
 	}
 }
 
@@ -289,4 +296,19 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 	socketClientIP := strings.Split(r.RemoteAddr, ":")
 	data := getJSON(r)
 	StoreUserInfo(socketClientIP[0], data["Username"].(string), data["Pass"].(string), "0")
+}
+
+func wsUserHandler(ws *websocket.Conn) {
+	for {
+		var msg Message
+		err := websocket.JSON.Receive(ws, &msg)
+		log.Println("fucker: ", &msg)
+		if err != nil {
+			log.Println("Error in recieving message", err)
+			return
+		}
+	}
+
+	// json.NewEncoder(w).Encode(listUsersinRoom(Roomname))
+	// websocket.Message.Send(ws, in)
 }
