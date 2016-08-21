@@ -40,7 +40,8 @@ func CreateUserTable() {
 		IP TEXT ,
 		Username TEXT PRIMARY KEY,
 		Pass TEXT,
-		SessionID TEXT ,
+		SessionID TEXT,
+		CurrentRoom TEXT,
     DateCreated
 	);
 	`
@@ -99,6 +100,36 @@ func StoreUserInfo(socketClientIP string, Username string, Password string, Sess
 		log.Println(err)
 	}
 	log.Println("Store New User Info")
+}
+func updateCurrentRoom(Username string, Roomname string) {
+	sql_stmt := `UPDATE Users SET CurrentRoom = $1 WHERE Username = $2`
+	if _, err := db.Exec(sql_stmt, Roomname, Username); err != nil {
+		log.Println("Error in Updadint current room: ", err)
+		return
+	}
+	log.Println("Updated CurrentRoom")
+	return
+}
+func listUsersinRoom(Roomname string) []string {
+	sql_stmt := `SELECT Username FROM	Users WHERE CurrentRoom=$1`
+	dbMu.Lock()
+	rows, err := db.Query(sql_stmt, Roomname)
+	dbMu.Unlock()
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	var result []string
+	for rows.Next() {
+		var a string
+		err2 := rows.Scan(&a)
+		if err2 != nil {
+			log.Println("Error scanning username")
+		}
+		result = append(result, a)
+	}
+	log.Println(result)
+	return result
 }
 
 func getUserInfo(socketClientIP string) (string, error) {

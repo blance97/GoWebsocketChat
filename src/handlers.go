@@ -205,6 +205,7 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 	case "/changeRoom/": //Change the room. sends back if the room is valid or not.
 		data := r.URL.Query()
 		Roomname := data.Get("RoomName")
+
 		if RoomExist(Roomname) {
 			w.WriteHeader(http.StatusOK)
 			return
@@ -251,15 +252,32 @@ func CheckRoomPass(w http.ResponseWriter, r *http.Request) {
 /**
 Returns User so that it can validate whether or not a message belongs to them.
 */
-func getUser(w http.ResponseWriter, r *http.Request) {
+func Users(w http.ResponseWriter, r *http.Request) {
+	log.Println("Path in Users Handler: ", r.URL.Path)
 	cookie, _ := r.Cookie("SessionToken")
 	SessionToken := cookie.Value
-
 	username, _ := getUsername(SessionToken)
-	q := User{
-		Username: username,
+
+	switch r.URL.Path {
+	case "/getUser":
+		q := User{
+			Username: username,
+		}
+		json.NewEncoder(w).Encode(q)
+
+	case "/updateUserRoom":
+		log.Println("Begin UpdateUser room")
+		data := getJSON(r)
+		cookie, _ := r.Cookie("SessionToken")
+		SessionToken := cookie.Value
+		username, _ := getUsername(SessionToken)
+		log.Println(data["RoomName"].(string))
+		updateCurrentRoom(username, data["RoomName"].(string))
+	case "/listUsersinRoom/":
+		data := r.URL.Query()
+		Roomname := data.Get("RoomName")
+		json.NewEncoder(w).Encode(listUsersinRoom(Roomname))
 	}
-	json.NewEncoder(w).Encode(q)
 }
 
 /**

@@ -15,7 +15,6 @@
 
 <body>
 
-
     <nav>
         <div class="nav-wrapper grey white-text">
             <a href="index.html" class="brand-logo left">Logo</a>
@@ -53,7 +52,7 @@
     </div>
 
     <div id="modal2" class="modal">
-        <div class="modal-content" >
+        <div class="modal-content">
             <div id="RoomChanger" class="collection"></div>
         </div>
         <div class="modal-footer">
@@ -62,16 +61,19 @@
     </div>
     </div>
 
-
-    <p id="ChatPanel"></p>
+    <div id="users" class="collection" style="float:left">
+      <h5>Users Online<h5>
+    </div>
+    <p id="ChatPanel" style="margin-left:50px"></p>
     <div id="Chatbox"></div>
     <center>
-        <div id="sendCtl" style="display: flex; width:85%">
+        <div id="sendCtl" style="display: flex; width:65%">
             <textarea name="Text1" id="inputChat" cols="40" rows="5" style="flex: 1; max-height: 100px;"></textarea>
             <!-- <input type="text"placeholder="type here" style="flex: 1;"></input> -->
-            <button class="btn btn-primary right hide-on-med-and-down" id="sendMsgBtn">Send</button>
+            <button class="btn btn-primary right hide-on-med-and-down" id="sendMsgBtn" style="height:45px;">Send</button>
         </div>
     </center>
+
 
 </body>
 

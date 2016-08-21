@@ -1,6 +1,7 @@
 var Checked
 $(document).ready(function() {
     checkLogin()
+    listUserRoom()
     $('#RoomName').val("")
     $('#test6').prop('checked', false);
     $('#test6').change(
@@ -68,6 +69,7 @@ var array = []
     This function is screwy because onload it loads previous messages so i have ot push to array TODO Fix
     */
 ws.onmessage = function(event) {
+    $("#ChatPanel").html("CONNECTED")
     var obj = jQuery.parseJSON(data)
     if (obj.Roomname == localStorage.getItem("RoomName")) {
         printJSON(event.data)
@@ -115,6 +117,24 @@ function getUser() {
     return Username
 }
 
+function listUserRoom() {
+    $.ajax({
+        type: 'GET',
+        url: '/listUsersinRoom/?RoomName=' + localStorage.getItem("RoomName"),
+        async: false,
+        success: function(data) {
+            var obj = jQuery.parseJSON(data)
+            for (i = 0; i < obj.length; i++) {
+                $("#users").append('<a href="#!" class="collection-item">'+obj[i]+'</a>')
+            }
+        },
+        error: function(data) {
+            alert("Could not recieve data from server")
+        }
+
+    });
+}
+
 function checkPrivateRoom(RoomName) {
     var hasPerm
     $.ajax({
@@ -133,6 +153,24 @@ function checkPrivateRoom(RoomName) {
     return hasPerm
 }
 
+function updateUserRoom(RoomName) {
+    $.ajax({
+        type: 'POST',
+        url: '/updateUserRoom',
+        async: false,
+        data: JSON.stringify({
+            RoomName: RoomName
+        }),
+        dataType: 'json',
+        success: function(data) {
+            console.log("Succeed to update user room")
+        },
+        error: function(data) {
+            console.log("Failed to update user room")
+        }
+    });
+}
+
 function changews(RoomName) {
     if (checkPrivateRoom(RoomName)) {
         var Pass = prompt("Please enter your Password");
@@ -149,6 +187,7 @@ function changews(RoomName) {
             }),
             dataType: 'json',
             success: function(data) {
+                updateUserRoom(RoomName)
                 console.log("change room")
                 localStorage.setItem("RoomName", RoomName);
                 console.log(RoomName)
@@ -159,6 +198,7 @@ function changews(RoomName) {
             }
         });
     } else {
+        updateUserRoom(RoomName)
         console.log("change room")
         localStorage.setItem("RoomName", RoomName);
         console.log(RoomName)
