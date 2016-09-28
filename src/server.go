@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
+
 	"golang.org/x/net/websocket"
 	//"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	//"time"
 )
 
@@ -48,9 +48,9 @@ func NewServer(Roomname string) *Server {
 	}
 }
 
-func (s *Server) updateLog(text string) {
-	file := strings.Split(s.Roomname, "/")
-	f, err := os.OpenFile("log/"+file[2], os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+func (s *Server) updateLog(text string, Roomname string) {
+	//file := strings.Split(s.Roomname, "/")
+	f, err := os.OpenFile("log/"+Roomname, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -85,8 +85,8 @@ func (s *Server) SendAll(msg Message) {
 /**
 Store boolean{true} into boolean channel
 */
-func (s *Server)Done() {
-		//log.Println("hey1",s.doneCh)
+func (s *Server) Done() {
+	//log.Println("hey1",s.doneCh)
 	s.doneCh <- true
 	//log.Println("hey",s.doneCh)
 }
@@ -102,8 +102,8 @@ func (s *Server) Err(err error) {
 The server stores messages into s.messages.  writes out entire message history to client
 */
 func (s *Server) sendPastMessages(c Client) {
-	file := strings.Split(s.Roomname, "/")
-	stuff, err := readLines("log/" + file[2])
+	//file := strings.Split(s.Roomname, "/")
+	stuff, err := readLines("log/" + "Roomname")
 	if err != nil {
 		log.Println("read: ", err)
 	}
@@ -118,7 +118,7 @@ func (s *Server) sendPastMessages(c Client) {
 Sends message to all conected clients
 */
 func (s *Server) sendAll(msg Message) {
-	for _, c := range s.clients {
+	for _, c := range s.clients { // send to all client in room
 		c.Write(msg)
 	}
 }
@@ -140,9 +140,9 @@ func (s *Server) Listen(RoomName string) {
 				s.errCh <- err
 			}
 		}()
-		client := NewClient(ws,s) //create new websocket with to server
-		s.Add(client)                        //Add client to server
-		client.Listen()                      //Fires go routine to listen write
+		client := NewClient(ws, s) //create new websocket with to server
+		s.Add(client)              //Add client to server
+		client.Listen()            //Fires go routine to listen write
 	}
 	http.Handle(s.Roomname, websocket.Handler(onConnected))
 	log.Println("Created handler")
@@ -155,7 +155,7 @@ func (s *Server) Listen(RoomName string) {
 			log.Println("Added new client ", RoomName)
 			s.clients[c.id] = c
 			log.Println("Now", len(s.clients), "clients connected.")
-			s.sendPastMessages(c)
+		//	s.sendPastMessages(c)
 		// del a client
 		case c := <-s.delCh: // Send to channgel C
 			log.Println("Delete client")
@@ -163,9 +163,8 @@ func (s *Server) Listen(RoomName string) {
 
 		// broadcast message for all clients
 		case msg := <-s.sendAllCh:
-			//log.Println("Send all:", msg)
 			s.messages = append(s.messages, msg)
-			s.updateLog(msg.String())
+			s.updateLog(msg.String(), msg.Roomname)
 			s.sendAll(msg)
 
 		case err := <-s.errCh:

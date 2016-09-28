@@ -9,9 +9,8 @@ p {
     text-align: center;
 }
 #Chatbox {
-
-    height: 700px;
-    width: 85%;
+    height: 500px;
+    width: 65%;
     margin: 25px auto;
     background: #f5f5dc;
     overflow: auto;
@@ -21,4 +20,10 @@ i{
     /*margin-right: 4px;*/
     position: relative;
     top: 2px
+}
+#users{
+  width: 75%;
+  height: 500px;
+  width: 100%;
+  overflow:auto;
 }

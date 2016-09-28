@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/rand"
 	"encoding/base64"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -52,19 +51,11 @@ func readLines(path string) ([]string, error) {
 func initRooms() {
 	mu.Lock()
 	defer mu.Unlock()
-	files, _ := ioutil.ReadDir("log/")
-	if len(files) == 0 {
-		_, err := os.OpenFile("log/"+"room1", os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Println(err)
-		}
-		StoreRoomInfo("Admin", "room1", "false", "")
-		server := NewServer("/entry/" + "room1") // start server
-		go server.Listen("room1")
-	} else {
-		for _, file := range files {
-			server := NewServer("/entry/" + file.Name())
-			go server.Listen(file.Name())
-		}
+	_, err := os.OpenFile("log/"+"room1", os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Println(err)
 	}
+	StoreRoomInfo("Admin", "room1", "false", "")
+	server := NewServer("/entry") // start server
+	go server.Listen("room1")
 }
