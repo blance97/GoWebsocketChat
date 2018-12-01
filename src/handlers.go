@@ -302,7 +302,6 @@ func wsUserHandler(ws *websocket.Conn) {
 	for {
 		var msg Message
 		err := websocket.JSON.Receive(ws, &msg)
-		log.Println("fucker: ", &msg)
 		if err != nil {
 			log.Println("Error in recieving message", err)
 			return
